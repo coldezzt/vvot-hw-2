@@ -7,10 +7,8 @@ import base64
 import datetime
 import logging
 
-from queue import send_task_message
 from dotenv import load_dotenv
 from config import Config
-from requests import parse_form_request
 from urllib.parse import parse_qs
 
 logger = logging.getLogger()

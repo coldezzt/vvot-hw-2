@@ -1,11 +1,10 @@
 import os
 
-
 class Config:
     def __init__(self) -> None:
         self.ydb_endpoint = os.environ["YDB_ENDPOINT"]
         self.ydb_database = os.environ["YDB_DATABASE"]
-        self.ydb_tasks_table = os.environ["YDB_TASKS_TABLE_NAME"]
+        self.ydb_tasks_table = os.environ["YDB_TASKS_TABLE"]
 
         self.queue_url = os.environ["DOWNLOAD_QUEUE_URL"]
 

@@ -6,7 +6,6 @@ import logging
 import requests
 
 from io import BytesIO
-from queue import send_to_extract_audio
 from config import Config
 from dotenv import load_dotenv
 from urllib.parse import urlparse, quote
@@ -74,7 +73,7 @@ def send_to_extract_audio(
     )
 
     client.send_message(
-        QueueUrl=config.extract_audio_queue_url,
+        QueueUrl=config.audio_queue_url,
         MessageBody=json.dumps(
             {
                 "task_id": task_id,
