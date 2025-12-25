@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Список заданий</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body {
+            background: #f3f4f6;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        th {
+            background: #f9fafb;
+            text-align: left;
+        }
+
+        tr:hover {
+            background: #f1f5f9;
+        }
+
+        .status {
+            font-weight: bold;
+        }
+
+        .error {
+            color: #dc2626;
+        }
+
+        .ok {
+            color: #16a34a;
+        }
+
+        .controls {
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .empty {
+            background: #fff;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Задания</h1>
+
+    <div class="controls">
+        <button onclick="loadTasks()">Обновить</button>
+    </div>
+
+    <div id="content"></div>
+
+    <script>
+        async function loadTasks() {
+            const container = document.getElementById('content');
+            container.innerHTML = 'Загрузка...';
+
+            try {
+                const response = await fetch('/api/tasks');
+                const data = await response.json();
+
+                if (!data.tasks || data.tasks.length === 0) {
+                    container.innerHTML = '<div class="empty">Заданий пока нет</div>';
+                    return;
+                }
+
+                let html = '<table>';
+                html += `
+            <tr>
+                <th>Дата</th>
+                <th>ID</th>
+                <th>Лекция</th>
+                <th>Видео</th>
+                <th>Статус</th>
+                <th>Результат</th>
+            </tr>
+        `;
+
+                data.tasks.forEach(t => {
+                    const date = new Date(t.created_at).toLocaleString();
+                    const statusClass = t.status === 'DONE' ? 'ok' : (t.status === 'ERROR' ? 'error' : '');
+
+                    let result = '-';
+                    if (t.result_url) {
+                        result = `<a href="${t.result_url}" target="_blank">PDF</a>`;
+                    } else if (t.error_message) {
+                        result = t.error_message;
+                    }
+
+                    html += `
+                <tr>
+                    <td>${date}</td>
+                    <td>${t.task_id}</td>
+                    <td>${t.lecture_name || ''}</td>
+                    <td><a href="${t.video_url}" target="_blank">ссылка</a></td>
+                    <td class="status ${statusClass}">${t.status}</td>
+                    <td>${result}</td>
+                </tr>
+            `;
+                });
+
+                html += '</table>';
+                container.innerHTML = html;
+
+            } catch (e) {
+                container.innerHTML = '<div class="empty">Ошибка загрузки данных</div>';
+            }
+        }
+
+        loadTasks();
+    </script>
+
+</body>
+
+</html>

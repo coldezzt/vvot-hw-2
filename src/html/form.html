@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Новое задание</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body {
+            background: #eef1f5;
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 40px;
+        }
+
+        .wrapper {
+            max-width: 420px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: -12px;
+            margin-bottom: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrapper">
+        <h1>Создание задания</h1>
+
+        <form method="POST" action="/">
+            <label for="title">Название лекции</label>
+            <input id="title" name="lecture" type="text" required>
+            <div class="hint">Любое удобное название</div>
+
+            <label for="url">Публичная ссылка на видео</label>
+            <input id="url" name="video_url" type="url" required>
+            <div class="hint">Ссылка на файл в Яндекс.Диске</div>
+
+            <button type="submit">Отправить</button>
+        </form>
+    </div>
+
+</body>
+
+</html>
