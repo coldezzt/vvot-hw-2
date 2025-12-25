@@ -228,7 +228,7 @@ resource "yandex_function" "media_fetcher" {
   description        = "Берет сообщение с download queue, сохраняет video/* в bucket, шлет имя объекта в audio queue"
   user_hash          = data.archive_file.media_fetcher_zip.output_sha256
   runtime            = "python312"
-  entrypoint         = "handler.main" # main.handler -> handler.main
+  entrypoint         = "main.handler"
   memory             = "1024"
   execution_timeout  = "120"
   folder_id          = var.folder_id
@@ -245,6 +245,21 @@ resource "yandex_function" "media_fetcher" {
 
     AWS_ACCESS_KEY_ID     = yandex_iam_service_account_static_access_key.sa_static_key.access_key
     AWS_SECRET_ACCESS_KEY = yandex_iam_service_account_static_access_key.sa_static_key.secret_key
+  }
+}
+
+resource "yandex_function_trigger" "download_trigger" {
+  name      = "${var.prefix}-media-fetcher-trigger"
+  folder_id = var.folder_id
+  message_queue {
+    queue_id           = yandex_message_queue.download_queue.arn
+    batch_cutoff       = "2"
+    batch_size         = 1
+    service_account_id = yandex_iam_service_account.main_sa.id
+  }
+  function {
+    id                 = yandex_function.media_fetcher.id
+    service_account_id = yandex_iam_service_account.main_sa.id
   }
 }
 
@@ -284,6 +299,21 @@ resource "yandex_function" "audio_extractor" {
   }
 }
 
+resource "yandex_function_trigger" "audio_extractor_trigger" {
+  name      = "${var.prefix}-audio-extractor-trigger"
+  folder_id = var.folder_id
+  message_queue {
+    queue_id           = yandex_message_queue.audio_queue.arn
+    batch_cutoff       = "2"
+    batch_size         = 1
+    service_account_id = yandex_iam_service_account.main_sa.id
+  }
+  function {
+    id                 = yandex_function.audio_extractor.id
+    service_account_id = yandex_iam_service_account.main_sa.id
+  }
+}
+
 # 4. speech_analyzer
 data "archive_file" "speech_analyzer_zip" {
   type        = "zip"
@@ -310,6 +340,21 @@ resource "yandex_function" "speech_analyzer" {
 
     AWS_ACCESS_KEY_ID     = yandex_iam_service_account_static_access_key.sa_static_key.access_key
     AWS_SECRET_ACCESS_KEY = yandex_iam_service_account_static_access_key.sa_static_key.secret_key
+  }
+}
+
+resource "yandex_function_trigger" "speech_analyzer_trigger" {
+  name      = "${var.prefix}-speech-analyzer-trigger"
+  folder_id = var.folder_id
+  message_queue {
+    queue_id           = data.yandex_message_queue.speech_queue.arn
+    batch_cutoff       = "2"
+    batch_size         = 1
+    service_account_id = yandex_iam_service_account.main_sa.id
+  }
+  function {
+    id                 = yandex_function.speech_analyzer.id
+    service_account_id = yandex_iam_service_account.main_sa.id
   }
 }
 
@@ -340,6 +385,18 @@ resource "yandex_function" "speech_monitor" {
 
     AWS_ACCESS_KEY_ID     = yandex_iam_service_account_static_access_key.sa_static_key.access_key
     AWS_SECRET_ACCESS_KEY = yandex_iam_service_account_static_access_key.sa_static_key.secret_key
+  }
+}
+
+resource "yandex_function_trigger" "speech_monitor_cron_trigger" {
+  name      = "${var.prefix}-speech-monitor-cron-trigger"
+  folder_id = var.folder_id
+  timer {
+    cron_expression = "* * ? * * *"
+  }
+  function {
+    id                 = yandex_function.speech_monitor.id
+    service_account_id = yandex_iam_service_account.main_sa.id
   }
 }
 
@@ -374,6 +431,21 @@ resource "yandex_function" "pdf_generator" {
 
     AWS_ACCESS_KEY_ID     = yandex_iam_service_account_static_access_key.sa_static_key.access_key
     AWS_SECRET_ACCESS_KEY = yandex_iam_service_account_static_access_key.sa_static_key.secret_key
+  }
+}
+
+resource "yandex_function_trigger" "pdf_generator_trigger" {
+  name      = "${var.prefix}-pdf-generator-trigger"
+  folder_id = var.folder_id
+  message_queue {
+    queue_id           = yandex_message_queue.summary_queue.arn
+    batch_cutoff       = "2"
+    batch_size         = 1
+    service_account_id = yandex_iam_service_account.main_sa.id
+  }
+  function {
+    id                 = yandex_function.pdf_generator.id
+    service_account_id = yandex_iam_service_account.main_sa.id
   }
 }
 

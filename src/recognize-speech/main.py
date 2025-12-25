@@ -43,7 +43,7 @@ def start_speech_recognition(config: Config, object_url: str) -> str:
         },
         "summarization": {
             "modelUri": f"gpt://{config.folder_id}/qwen3-235b-a22b-fp8/latest",
-            "properties": [{"instruction": "Напиши конспект по лекции. Хорошо структурируй информацию, запоминай примеры. Названия полей в JSON пиши на английском языке.", "jsonObject": True}]
+            "properties": [{"instruction": "Напиши конспект по лекции. Конспект должен иметь четкую структуру.", "jsonObject": True}]
         }
     }
 

@@ -126,8 +126,8 @@ def handler(event, context):
 
         data = parse_form_request(event)
 
-        lecture_title = data.get("lecture-title", "")
-        video_url = data.get("yandex-link", "")
+        lecture_title = data.get("lecture", "")
+        video_url = data.get("video_url", "")
 
         task_id = save_task(config, lecture_title, video_url)
         send_task_message(config, task_id, video_url)

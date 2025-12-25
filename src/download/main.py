@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from urllib.parse import urlparse, quote
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 ALLOWED_DOMAINS = (
     "yadi.sk",
@@ -96,16 +97,16 @@ def is_public_video(url: str) -> bool:
 
     api_url = "https://cloud-api.yandex.net/v1/disk/public/resources"
     params = {"public_key": quote(url, safe="")}
+    headers = {'Accept': 'application/json'}
 
     try:
-        response = requests.get(api_url, params=params, timeout=10)
+        response = requests.get(api_url, params=params, headers=headers, timeout=10)
         response.raise_for_status()
         data = response.json()
     except Exception:
         return False
 
     return data.get("type") == "file" and data.get("mime_type", "").startswith("video/")
-
 
 def get_download_url(public_url: str) -> str:
     api_url = "https://cloud-api.yandex.net/v1/disk/public/resources/download"
@@ -151,26 +152,62 @@ def handler(event, context):
     load_dotenv(".env")
     config = Config()
 
-    for message in event["messages"]:
-        body = json.loads(message["details"]["message"]["body"])
+    logger.info("Lambda handler started")
 
-        task_id = body["task_id"]
-        video_url = body["video_url"]
+    try:
+        messages = event.get("messages", [])
+        logger.info(f"Received {len(messages)} message(s)")
+    except Exception as e:
+        logger.exception(f"Failed to read messages from event: {e}")
+        return {"statusCode": 400}
 
-        logger.info(f"Received task {task_id}")
+    for msg_index, message in enumerate(messages):
+        logger.info(f"Processing message #{msg_index}")
 
-        if not is_public_video(video_url):
-            update_status(
-                config,
-                task_id,
-                "Ошибка",
-                "Ссылка не ведёт к публичному видео",
-            )
+        try:
+            body_raw = message["details"]["message"]["body"]
+            body = json.loads(body_raw)
+            logger.debug(f"Message body: {body}")
+
+            task_id = body["task_id"]
+            video_url = body["video_url"]
+
+            logger.info(f"Received task {task_id}, video_url={video_url}")
+
+            # Проверка публичности видео
+            if not is_public_video(video_url):
+                logger.warning(f"Task {task_id}: video is not public")
+                update_status(
+                    config,
+                    task_id,
+                    "Ошибка",
+                    "Ссылка не ведёт к публичному видео",
+                )
+                continue
+
+            update_status(config, task_id, "В обработке", None)
+            logger.info(f"Task {task_id}: status updated to 'В обработке'")
+
+            # Загрузка видео
+            object_name = upload_video(config, task_id, video_url)
+            logger.info(f"Task {task_id}: video uploaded as {object_name}")
+
+            # Отправка на извлечение аудио
+            send_to_extract_audio(config, task_id, object_name)
+            logger.info(f"Task {task_id}: sent to audio extractor")
+
+        except Exception as e:
+            logger.exception(f"Error while processing message #{msg_index}: {e}")
+            try:
+                update_status(
+                    config,
+                    body.get("task_id", "unknown"),
+                    "Ошибка",
+                    f"Внутренняя ошибка обработчика",
+                )
+            except Exception as nested:
+                logger.exception(f"Failed to update status for failed task: {nested}")
             continue
 
-        update_status(config, task_id, "В обработке", None)
-
-        object_name = upload_video(config, task_id, video_url)
-        send_to_extract_audio(config, task_id, object_name)
-
+    logger.info("Lambda handler finished successfully")
     return {"statusCode": 200}

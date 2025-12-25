@@ -16,7 +16,7 @@ require_env() {
 
 require_env \
   S3_BUCKET_NAME \
-  RECOGNIZE_SPEECH_QUEUE_URL \
+  SPEECH_QUEUE_URL \
   AWS_ACCESS_KEY_ID \
   AWS_SECRET_ACCESS_KEY
 
@@ -41,7 +41,7 @@ send_queue_message() {
     --header 'Content-Type: application/x-www-form-urlencoded' \
     --data-urlencode 'Action=SendMessage' \
     --data-urlencode "MessageBody=${payload}" \
-    --data-urlencode "QueueUrl=${RECOGNIZE_SPEECH_QUEUE_URL}" \
+    --data-urlencode "QueueUrl=${SPEECH_QUEUE_URL}" \
     --user "${AWS_ACCESS_KEY_ID}:${AWS_SECRET_ACCESS_KEY}" \
     --aws-sigv4 'aws:amz:ru-central1:sqs' \
     https://message-queue.api.cloud.yandex.net/ \

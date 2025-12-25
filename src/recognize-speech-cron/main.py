@@ -81,6 +81,7 @@ def check_completed_tasks(config: Config):
 
             ok, resp = check_recognition_status(config, task_info['operation_id'])
             if ok:
+                logger.info(f"Task {task_id} succeeded")
                 result_json = json.loads(resp['result']['summarization']['results'][0]['response'])
                 object_name = save_recognition_result(config, task_id, result_json)
                 send_message_to_queue(config, json.dumps({"task_id": task_id, "object_name": object_name}))

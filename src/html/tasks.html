@@ -110,8 +110,8 @@
                     const statusClass = t.status === 'DONE' ? 'ok' : (t.status === 'ERROR' ? 'error' : '');
 
                     let result = '-';
-                    if (t.result_url) {
-                        result = `<a href="${t.result_url}" target="_blank">PDF</a>`;
+                    if (t.description) {
+                        result = `<a href="${t.description}" target="_blank">PDF</a>`;
                     } else if (t.error_message) {
                         result = t.error_message;
                     }

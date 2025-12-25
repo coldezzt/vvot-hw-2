@@ -5,7 +5,7 @@ class Config:
     def __init__(self) -> None:
         self.ydb_endpoint = os.environ["YDB_ENDPOINT"]
         self.ydb_database = os.environ["YDB_DATABASE"]
-        self.ydb_tasks_table = os.environ["YDB_TASKS_TABLE_NAME"]
+        self.ydb_tasks_table = os.environ["YDB_TASKS_TABLE"]
 
         self.s3_bucket = os.environ["S3_BUCKET_NAME"]
         self.audio_queue_url = os.environ["AUDIO_QUEUE_URL"]
