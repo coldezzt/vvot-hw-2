@@ -1,12 +1,27 @@
-# vvot-hw-2
+### Использованные ресурсы
+- Yandex API Gateway
+- Yandex Object Storage
+- Yandex Managed Service for YDB.
+- Yandex Message Queue
+- Yandex Cloud Functions
+- Yandex Identity and Access Management
+- Yandex Resource Manager
+- Yandex SpeechKit
+- YandexGPT API
 
-## extract-audio
+### Запуск
 
-Cloud Function для извлечения аудиодорожки из видео.
+Необходим статически собранный ffmpeg по пути src/audio-extractor
 
-### Зависимости
-- статически собранный `ffmpeg` рядом с `handler.sh`
-- доступ к S3 и Message Queue
+#### Запуск:
 
-### Поток
-S3(video) → ffmpeg → S3(audio) → SQS
+```bash
+export YC_TOKEN=$(yc iam create-token)
+
+cd terraform
+terraform init
+terraform apply \
+  -var="cloud_id=<ваш_cloud_id>" \
+  -var="folder_id=<ваш_folder_id>" \
+  -var="prefix=<префикс_для_названий_ресурсов>"
+```
